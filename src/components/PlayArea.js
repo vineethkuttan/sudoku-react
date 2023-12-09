@@ -76,6 +76,40 @@ export const PlayArea = ({ reveal }) => {
     const [answer, setAnswer] = useState(ansGrid);
     const [state, griddispatch] = useReducer(Gridreducer, question)
     const [Validate, validatedispatch] = useReducer(Validatereducer, validate)
+
+    const unUsedInBox = (rowStart, colStart, num) => {
+        for (let i = 0; i < 3; i += 1) {
+            for (let j = 0; j < 3; j += 1) {
+                let check = question[rowStart + i][colStart + j];
+                if (check === num || check == num) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    const unUsedInCol = (j, num) => {
+        for (let i = 0; i < 9; i += 1) {
+            if (question[i][j] === num || question[i][j] == num) {
+                return false;
+            }
+        }
+        return true;
+    };
+    const unUsedInRow = (i, num) => {
+        for (let j = 0; j < 9; j += 1) {
+            if (question[i][j] === num || question[i][j] == num) {
+                return false;
+            }
+        }
+        return true;
+    };
+
+    const CheckIfSafe = (i, j, num) => {
+        return (unUsedInRow(i, num) && unUsedInCol(j, num) && unUsedInBox(i - i % 3, j - j % 3, num));
+    }
+
+
     // this.ans = this.matrix.map(row => row.slice());
     useEffect(() => {
         if (hint) {
@@ -99,7 +133,7 @@ export const PlayArea = ({ reveal }) => {
                         if (state[i][j] == answer[i][j]) {
                             validatedispatch({ type: 'UPDATE', rowIndex: i, colIndex: j, newValue: 1 })
                         }
-                        else if (SudokuObj.CheckIfSafe(i, j, state[i][j])) {
+                        else if (CheckIfSafe(i, j, state[i][j])) {
                             validatedispatch({ type: 'UPDATE', rowIndex: i, colIndex: j, newValue: 3 })
                         }
                         else {
@@ -129,7 +163,7 @@ export const PlayArea = ({ reveal }) => {
     return (
         <div className="body" id="sudoku">
             {
-                reveal ? <Grid question={answer} state={answer} /> : <Grid question={question} state={state} dispatch={griddispatch} validate={Validate} />
+                reveal ? <Grid question={answer} state={answer} validate={Validate} /> : <Grid question={question} state={state} dispatch={griddispatch} validate={Validate} />
             }
             {
                 reveal ? <OptCard remaining={Array.from({ length: 9 }, () => 0)} /> : <OptCard remaining={Remaining} />
